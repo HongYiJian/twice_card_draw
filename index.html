@@ -1,0 +1,348 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>TWICE 抽卡活動</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Arial', sans-serif;
+            background: linear-gradient(135deg, #FF6B9D 0%, #FEC8D8 50%, #C8A4D4 100%);
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+        }
+
+        .container {
+            text-align: center;
+            max-width: 500px;
+            width: 100%;
+        }
+
+        h1 {
+            color: #fff;
+            font-size: 2.5em;
+            margin-bottom: 10px;
+            text-shadow: 3px 3px 6px rgba(0, 0, 0, 0.2);
+            letter-spacing: 2px;
+        }
+
+        .subtitle {
+            color: #fff;
+            font-size: 1.1em;
+            margin-bottom: 40px;
+            opacity: 0.9;
+        }
+
+        .card-container {
+            perspective: 1000px;
+            margin-bottom: 50px;
+        }
+
+        .card {
+            width: 280px;
+            height: 400px;
+            margin: 0 auto;
+            position: relative;
+            transform-style: preserve-3d;
+            transition: transform 0.6s;
+        }
+
+        .card.spinning-glow {
+            animation: spinAndGlow 3s ease-in-out;
+        }
+
+        @keyframes spinAndGlow {
+            0% {
+                transform: rotateY(0deg) scale(1);
+                filter: brightness(1);
+            }
+            30% {
+                transform: rotateY(720deg) scale(1);
+                filter: brightness(1.5);
+            }
+            40% {
+                transform: rotateY(1080deg) scale(1.05);
+                filter: brightness(3) drop-shadow(0 0 30px #FFFFFF);
+            }
+            50% {
+                transform: rotateY(1440deg) scale(1.1);
+                filter: brightness(6) drop-shadow(0 0 60px #FFFFFF) drop-shadow(0 0 100px #FFFFFF) drop-shadow(0 0 120px rgba(255, 255, 255, 0.8));
+            }
+            60% {
+                transform: rotateY(1440deg) scale(1.05);
+                filter: brightness(4) drop-shadow(0 0 40px #FFFFFF);
+            }
+            75% {
+                transform: rotateY(1440deg) scale(1);
+                filter: brightness(2);
+            }
+            100% {
+                transform: rotateY(1440deg) scale(1);
+                filter: brightness(1);
+            }
+        }
+
+        .card-face {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            backface-visibility: hidden;
+            border-radius: 20px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: linear-gradient(135deg, #fff 0%, #f8f8f8 100%);
+            border: 5px solid #FF6B9D;
+        }
+
+        .card-face img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            border-radius: 15px;
+        }
+
+        .card-front {
+            transform: rotateY(0deg);
+        }
+
+        .card-back {
+            transform: rotateY(180deg);
+        }
+
+        .question-mark {
+            font-size: 120px;
+            color: #FF6B9D;
+            font-weight: bold;
+            text-shadow: 3px 3px 6px rgba(0, 0, 0, 0.1);
+        }
+
+        .draw-button {
+            background: linear-gradient(135deg, #FF6B9D 0%, #FF8FAB 100%);
+            color: white;
+            border: none;
+            padding: 20px 60px;
+            font-size: 1.5em;
+            font-weight: bold;
+            border-radius: 50px;
+            cursor: pointer;
+            box-shadow: 0 8px 20px rgba(255, 107, 157, 0.4);
+            transition: all 0.3s ease;
+            letter-spacing: 2px;
+        }
+
+        .draw-button:hover:not(:disabled) {
+            transform: translateY(-3px);
+            box-shadow: 0 12px 25px rgba(255, 107, 157, 0.6);
+            background: linear-gradient(135deg, #FF8FAB 0%, #FF6B9D 100%);
+        }
+
+        .draw-button:active:not(:disabled) {
+            transform: translateY(-1px);
+        }
+
+        .draw-button:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+        }
+
+        .result-text {
+            margin-top: 30px;
+            font-size: 1.3em;
+            color: #fff;
+            font-weight: bold;
+            min-height: 30px;
+            text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.2);
+        }
+
+        .fade-in {
+            animation: fadeIn 0.5s ease-in;
+        }
+
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+                transform: scale(0.9);
+            }
+            to {
+                opacity: 1;
+                transform: scale(1);
+            }
+        }
+
+        /* 響應式設計 */
+        @media (max-width: 768px) {
+            h1 {
+                font-size: 2em;
+            }
+
+            .card {
+                width: 240px;
+                height: 340px;
+            }
+
+            .question-mark {
+                font-size: 100px;
+            }
+
+            .draw-button {
+                padding: 18px 50px;
+                font-size: 1.3em;
+            }
+        }
+
+        @media (max-width: 480px) {
+            h1 {
+                font-size: 1.8em;
+            }
+
+            .card {
+                width: 200px;
+                height: 280px;
+            }
+
+            .question-mark {
+                font-size: 80px;
+            }
+
+            .draw-button {
+                padding: 15px 40px;
+                font-size: 1.2em;
+            }
+        }
+
+        /* 設定說明區塊 */
+        .settings {
+            background: rgba(255, 255, 255, 0.9);
+            padding: 20px;
+            border-radius: 15px;
+            margin-top: 40px;
+            text-align: left;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
+        }
+
+        .settings h3 {
+            color: #FF6B9D;
+            margin-bottom: 15px;
+        }
+
+        .settings p {
+            color: #666;
+            font-size: 0.9em;
+            line-height: 1.6;
+            margin-bottom: 10px;
+        }
+
+        .settings code {
+            background: #f0f0f0;
+            padding: 2px 6px;
+            border-radius: 3px;
+            font-family: monospace;
+            color: #FF6B9D;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>✨ TWICE ✨</h1>
+        <p class="subtitle">抽卡活動</p>
+
+        <div class="card-container">
+            <div class="card" id="card">
+                <div class="card-face card-front">
+                    <div class="question-mark">?</div>
+                </div>
+            </div>
+        </div>
+
+        <button class="draw-button" id="drawBtn" onclick="drawCard()">抽卡</button>
+
+        <div class="result-text" id="resultText"></div>
+
+        <div class="settings">
+            <h3>🎴 卡片圖片設定說明</h3>
+            <p>請在下方 JavaScript 的 <code>cardImages</code> 陣列中修改三張卡片的圖片網址：</p>
+            <p>• <code>cardImages[0]</code> = 第一張卡片圖片網址</p>
+            <p>• <code>cardImages[1]</code> = 第二張卡片圖片網址</p>
+            <p>• <code>cardImages[2]</code> = 第三張卡片圖片網址</p>
+            <p style="margin-top: 15px; color: #FF6B9D; font-weight: bold;">每張卡片抽中機率均為 1/3</p>
+        </div>
+    </div>
+
+    <script>
+        // ========================================
+        // 🎴 請在這裡修改三張卡片的圖片網址
+        // ========================================
+        const cardImages = [
+            'https://storage.googleapis.com/yugioh-pictures/pics/10000020.jpg',  // 卡片 1
+            'https://storage.googleapis.com/yugioh-pictures/pics/10000000.jpg',  // 卡片 2
+            'https://storage.googleapis.com/yugioh-pictures/pics/10000010.jpg'   // 卡片 3
+        ];
+
+        const cardNames = ['卡片 A', '卡片 B', '卡片 C'];  // 可選：修改卡片名稱
+        // ========================================
+
+        let isDrawing = false;
+
+        function drawCard() {
+            if (isDrawing) return;
+            
+            isDrawing = true;
+            const btn = document.getElementById('drawBtn');
+            const card = document.getElementById('card');
+            const resultText = document.getElementById('resultText');
+            
+            btn.disabled = true;
+            resultText.textContent = '';
+            
+            // 隨機選擇一張卡片 (1/3 機率)
+            const randomIndex = Math.floor(Math.random() * 3);
+            const selectedImage = cardImages[randomIndex];
+            const selectedName = cardNames[randomIndex];
+            
+            // 開始旋轉並發光的動畫
+            card.classList.add('spinning-glow');
+            
+            // 在白光最強時（50% 動畫進度，1.5秒）切換卡片
+            setTimeout(() => {
+                const cardFront = card.querySelector('.card-front');
+                cardFront.innerHTML = `<img src="${selectedImage}" alt="${selectedName}">`;
+            }, 1500);
+            
+            // 動畫結束後顯示結果
+            setTimeout(() => {
+                card.classList.remove('spinning-glow');
+                resultText.textContent = `🎉 恭喜獲得：${selectedName} 🎉`;
+                resultText.classList.add('fade-in');
+                
+                setTimeout(() => {
+                    resultText.classList.remove('fade-in');
+                }, 500);
+                
+                btn.disabled = false;
+                isDrawing = false;
+            }, 3000);
+        }
+
+        // 重置功能（點擊卡片重置）
+        document.getElementById('card').addEventListener('click', function() {
+            if (!isDrawing) {
+                const cardFront = this.querySelector('.card-front');
+                cardFront.innerHTML = '<div class="question-mark">?</div>';
+                document.getElementById('resultText').textContent = '';
+            }
+        });
+    </script>
+</body>
+</html>
