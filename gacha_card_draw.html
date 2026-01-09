@@ -1,0 +1,250 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Single Draw Gacha</title>
+  <style>
+    * {
+      box-sizing: border-box;
+      user-select: none;
+    }
+
+    body {
+      margin: 0;
+      background: radial-gradient(circle, #111, #000);
+      height: 100vh;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      color: #fff;
+      font-family: sans-serif;
+    }
+
+    #scene {
+      text-align: center;
+    }
+
+    .card {
+      width: 200px;
+      height: 300px;
+      margin: 0 auto 20px;
+      position: relative;
+      transform-style: preserve-3d;
+      transition: transform 1s ease;
+      perspective: 1000px;
+    }
+
+    .face {
+      position: absolute;
+      width: 100%;
+      height: 100%;
+      backface-visibility: hidden;
+      border-radius: 12px;
+      background-size: cover;
+      background-position: center;
+    }
+
+    .back {
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      font-size: 24px;
+      font-weight: bold;
+      color: white;
+      text-shadow: 2px 2px 4px rgba(0,0,0,0.5);
+    }
+
+    .front {
+      transform: rotateY(180deg);
+      box-shadow: 0 0 20px rgba(255,255,255,0.3);
+    }
+
+    .card.reveal {
+      transform: rotateY(180deg);
+    }
+
+    /* 白閃 */
+    #flash {
+      position: fixed;
+      inset: 0;
+      background: white;
+      opacity: 0;
+      pointer-events: none;
+    }
+
+    .flash {
+      animation: flash 0.25s ease;
+    }
+
+    @keyframes flash {
+      0% { opacity: 0; }
+      50% { opacity: 1; }
+      100% { opacity: 0; }
+    }
+
+    /* 假故障 */
+    #glitch {
+      position: fixed;
+      inset: 0;
+      background: black;
+      opacity: 0;
+      pointer-events: none;
+    }
+
+    .glitch {
+      animation: glitch 0.4s steps(2);
+    }
+
+    @keyframes glitch {
+      0% { opacity: 1; filter: hue-rotate(0deg); }
+      50% { filter: hue-rotate(120deg); }
+      100% { opacity: 0; }
+    }
+
+    /* 震動 */
+    .shake {
+      animation: shake 0.3s;
+    }
+
+    @keyframes shake {
+      0% { transform: translate(0) rotateY(180deg); }
+      25% { transform: translate(-6px, 4px) rotateY(180deg); }
+      50% { transform: translate(6px, -4px) rotateY(180deg); }
+      75% { transform: translate(-4px, 2px) rotateY(180deg); }
+      100% { transform: translate(0) rotateY(180deg); }
+    }
+
+    button {
+      padding: 12px 32px;
+      font-size: 18px;
+      cursor: pointer;
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      color: white;
+      border: none;
+      border-radius: 8px;
+      font-weight: bold;
+      transition: transform 0.2s;
+    }
+
+    button:hover:not(:disabled) {
+      transform: scale(1.05);
+    }
+
+    button:disabled {
+      opacity: 0.5;
+      cursor: not-allowed;
+    }
+
+    /* 搖滾卡：強烈震動 + 微放大 */
+    .rock-reveal {
+      animation: rockImpact 0.6s ease;
+    }
+
+    @keyframes rockImpact {
+      0% { transform: scale(1) rotateY(180deg); }
+      40% { transform: scale(1.08) rotateY(180deg); }
+      100% { transform: scale(1) rotateY(180deg); }
+    }
+
+    /* 甜蜜卡：慢慢浮出 */
+    .sweet-reveal {
+      animation: sweetFloat 1.2s ease-out;
+    }
+
+    @keyframes sweetFloat {
+      from {
+        transform: translateY(20px) rotateY(180deg);
+        opacity: 0;
+      }
+      to {
+        transform: translateY(0) rotateY(180deg);
+        opacity: 1;
+      }
+    }
+
+    /* 彩蛋卡：不穩定感 */
+    .easter-reveal {
+      animation: easterWeird 0.8s steps(2);
+    }
+
+    @keyframes easterWeird {
+      0% { transform: translateX(0) rotateY(180deg); }
+      50% { transform: translateX(-6px) rotateY(180deg); }
+      100% { transform: translateX(0) rotateY(180deg); }
+    }
+  </style>
+</head>
+<body>
+
+<div id="scene">
+  <div id="card" class="card">
+    <div class="face back">?</div>
+    <div class="face front"></div>
+  </div>
+
+  <button id="drawBtn">抽卡</button>
+</div>
+
+<div id="flash"></div>
+<div id="glitch"></div>
+
+<script>
+const card = document.getElementById("card");
+const front = document.querySelector(".front");
+const flash = document.getElementById("flash");
+const glitch = document.getElementById("glitch");
+const btn = document.getElementById("drawBtn");
+
+// 抽卡池（可調機率）
+const pool = [
+  { type: "rock", img: "https://storage.googleapis.com/yugioh-pictures/pics/10000020.jpg", name: "搖滾卡" },
+  { type: "sweet", img: "https://storage.googleapis.com/yugioh-pictures/pics/10000000.jpg", name: "甜蜜卡" },
+  { type: "easter", img: "https://storage.googleapis.com/yugioh-pictures/pics/10000010.jpg", name: "彩蛋卡" }
+];
+
+btn.addEventListener("click", () => {
+  btn.disabled = true;
+
+  const result = pool[Math.floor(Math.random() * pool.length)];
+
+  // 白閃
+  setTimeout(() => {
+    flash.classList.add("flash");
+  }, 800);
+
+  // 翻牌（先設定圖片）
+  setTimeout(() => {
+    front.style.backgroundImage = `url(${result.img})`;
+    card.classList.add("reveal");
+  }, 900);
+
+  // 等待翻牌動畫完成後，再套用特殊效果
+  setTimeout(() => {
+    if (result.type === "rock") {
+      card.classList.add("rock-reveal", "shake");
+    }
+
+    if (result.type === "sweet") {
+      card.classList.add("sweet-reveal");
+    }
+
+    if (result.type === "easter") {
+      glitch.classList.add("glitch");
+      card.classList.add("easter-reveal");
+    }
+  }, 1900);
+
+  // 重置
+  setTimeout(() => {
+    btn.disabled = false;
+    card.className = "card";
+    flash.classList.remove("flash");
+    glitch.classList.remove("glitch");
+  }, 4000);
+});
+</script>
+
+</body>
+</html>
